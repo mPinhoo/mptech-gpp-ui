@@ -3,23 +3,8 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button, Badge, Table } from "@/components/ui";
-
-interface Pedido {
-  id: string;
-  cliente: string;
-  data: string;
-  valor: string;
-  status: string;
-  [key: string]: unknown;
-}
-
-const pedidos: Pedido[] = [
-  { id: "#001", cliente: "João Silva", data: "26/05/2026", valor: "R$ 1.250,00", status: "Concluído" },
-  { id: "#002", cliente: "Maria Souza", data: "25/05/2026", valor: "R$ 890,00", status: "Pendente" },
-  { id: "#003", cliente: "Carlos Lima", data: "25/05/2026", valor: "R$ 2.340,00", status: "Concluído" },
-  { id: "#004", cliente: "Ana Costa", data: "24/05/2026", valor: "R$ 560,00", status: "Cancelado" },
-  { id: "#005", cliente: "Pedro Santos", data: "24/05/2026", valor: "R$ 1.780,00", status: "Pendente" },
-];
+import { useApi } from "@/hooks/useApi";
+import type { Pedido } from "@/types";
 
 const statusVariant = (status: string) => {
   switch (status) {
@@ -27,6 +12,8 @@ const statusVariant = (status: string) => {
       return "success" as const;
     case "Pendente":
       return "warning" as const;
+    case "Aprovado":
+      return "default" as const;
     case "Cancelado":
       return "danger" as const;
     default:
@@ -35,7 +22,7 @@ const statusVariant = (status: string) => {
 };
 
 const columns = [
-  { key: "id", header: "Pedido" },
+  { key: "numero", header: "Pedido" },
   { key: "cliente", header: "Cliente" },
   { key: "data", header: "Data" },
   { key: "valor", header: "Valor" },
@@ -49,6 +36,8 @@ const columns = [
 ];
 
 export default function PedidosPage() {
+  const { data: pedidos, loading } = useApi<Pedido[]>("/pedidos");
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -66,11 +55,15 @@ export default function PedidosPage() {
         </Link>
       </div>
 
-      <Table
-        columns={columns}
-        data={pedidos}
-        keyExtractor={(row) => row.id}
-      />
+      {loading ? (
+        <div className="h-64 rounded-lg border border-border bg-card animate-pulse" />
+      ) : (
+        <Table
+          columns={columns}
+          data={pedidos || []}
+          keyExtractor={(row) => row.id}
+        />
+      )}
     </div>
   );
 }

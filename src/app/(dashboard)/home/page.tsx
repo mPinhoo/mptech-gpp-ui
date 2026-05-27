@@ -4,43 +4,63 @@ import { ShoppingCart, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { Chart } from "@/components/ui";
+import { useApi } from "@/hooks/useApi";
+import type { DashboardStats, ChartData } from "@/types";
 
-const stats = [
-  {
-    title: "Pedidos",
-    value: "128",
-    icon: ShoppingCart,
-    trend: { value: 12.5, positive: true },
-  },
-  {
-    title: "Faturamento",
-    value: "R$ 45.230,00",
-    icon: TrendingUp,
-    trend: { value: 8.2, positive: true },
-  },
-  {
-    title: "Despesas",
-    value: "R$ 12.480,00",
-    icon: TrendingDown,
-    trend: { value: 3.1, positive: false },
-  },
-  {
-    title: "Saldo do Mês",
-    value: "R$ 32.750,00",
-    icon: Wallet,
-    trend: { value: 15.3, positive: true },
-  },
-];
-
-const revenueData = [
-  { mes: "Jan", faturamento: 32000, despesas: 12000 },
-  { mes: "Fev", faturamento: 28000, despesas: 11500 },
-  { mes: "Mar", faturamento: 35000, despesas: 13000 },
-  { mes: "Abr", faturamento: 40000, despesas: 12800 },
-  { mes: "Mai", faturamento: 45230, despesas: 12480 },
-];
+function formatCurrency(value: number) {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
 
 export default function HomePage() {
+  const { data: stats, loading: loadingStats } = useApi<DashboardStats>("/dashboard/stats");
+  const { data: chartData, loading: loadingChart } = useApi<ChartData[]>("/dashboard/chart");
+
+  if (loadingStats || loadingChart) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">Visão geral do seu negócio</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-32 rounded-xl border border-border bg-card animate-pulse" />
+          ))}
+        </div>
+        <div className="h-[400px] rounded-xl border border-border bg-card animate-pulse" />
+      </div>
+    );
+  }
+
+  const statCards = stats
+    ? [
+        {
+          title: "Pedidos",
+          value: String(stats.totalPedidos),
+          icon: ShoppingCart,
+          trend: { value: Math.abs(stats.trends.pedidos), positive: stats.trends.pedidos >= 0 },
+        },
+        {
+          title: "Faturamento",
+          value: formatCurrency(stats.faturamento),
+          icon: TrendingUp,
+          trend: { value: Math.abs(stats.trends.faturamento), positive: stats.trends.faturamento >= 0 },
+        },
+        {
+          title: "Despesas",
+          value: formatCurrency(stats.despesas),
+          icon: TrendingDown,
+          trend: { value: 3.1, positive: false },
+        },
+        {
+          title: "Saldo do Mês",
+          value: formatCurrency(stats.saldoMes),
+          icon: Wallet,
+          trend: { value: Math.abs(stats.trends.faturamento), positive: stats.saldoMes >= 0 },
+        },
+      ]
+    : [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -51,7 +71,7 @@ export default function HomePage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <StatCard key={stat.title} {...stat} />
         ))}
       </div>
@@ -63,7 +83,7 @@ export default function HomePage() {
         <CardContent>
           <Chart
             type="area"
-            data={revenueData}
+            data={chartData || []}
             xAxisKey="mes"
             series={[
               { dataKey: "faturamento", name: "Faturamento", color: "oklch(0.45 0.2 264)" },

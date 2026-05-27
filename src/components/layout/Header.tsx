@@ -1,17 +1,26 @@
 "use client";
 
-import { Menu, Moon, Sun } from "lucide-react";
+import { Menu, Moon, Sun, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSidebar } from "@/components/providers/SidebarProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
-  const { isMobile, toggleMobile, expanded, pinned } = useSidebar();
+  const { isMobile, toggleMobile } = useSidebar();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   return (
     <header
@@ -30,6 +39,12 @@ export function Header() {
 
       <div className="flex-1" />
 
+      {user && (
+        <span className="text-sm text-muted-foreground hidden sm:block">
+          {user.nome}
+        </span>
+      )}
+
       {mounted && (
         <button
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
@@ -39,6 +54,14 @@ export function Header() {
           {resolvedTheme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
         </button>
       )}
+
+      <button
+        onClick={handleLogout}
+        className="p-2 rounded-md hover:bg-accent text-foreground transition-colors"
+        title="Sair"
+      >
+        <LogOut size={20} />
+      </button>
     </header>
   );
 }
