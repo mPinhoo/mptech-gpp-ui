@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { AuthProvider } from "@/components/providers/AuthProvider";
+import { siteConfig } from "@/config/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: "MPTech GPP",
   description: "Sistema de Gestão de Pedidos e Produtos",
 };
@@ -31,9 +32,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full">
-        <ThemeProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

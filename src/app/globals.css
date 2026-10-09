@@ -88,3 +88,59 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
+
+/* ---------- Landing page ---------- */
+
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.landing-grid {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.landing-root) {
+    scroll-behavior: smooth;
+  }
+
+  .landing-enter {
+    animation: landing-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--landing-delay, 0ms);
+  }
+
+  .landing-float {
+    animation: landing-float 6s ease-in-out infinite;
+    animation-delay: var(--landing-delay, 0ms);
+  }
+
+  /* Revelação ao rolar: só onde há suporte nativo; sem suporte o conteúdo fica visível. */
+  @supports (animation-timeline: view()) {
+    .landing-reveal {
+      animation: landing-fade-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
